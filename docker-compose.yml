@@ -1,0 +1,83 @@
+# 一条命令启动完整 RAG 服务：
+#   docker compose up -d
+# 然后浏览器打开 http://localhost:8501
+#
+# 用户必须先：
+#   1. 复制 .env.example 为 .env 并填入至少一个 LLM provider 的 API key
+#   2. 把要入库的文档放到 ./data/raw/
+
+# Milvus 的内嵌 etcd 配置直接写在这里，避免依赖 standalone.bat 生成的文件
+configs:
+  embed_etcd_yaml:
+    content: |
+      listen-client-urls: http://0.0.0.0:2379
+      advertise-client-urls: http://0.0.0.0:2379
+      quota-backend-bytes: 4294967296
+      auto-compaction-mode: revision
+      auto-compaction-retention: '1000'
+  milvus_user_yaml:
+    content: |
+      # Extra config to override default milvus.yaml
+
+services:
+
+  milvus:
+    image: milvusdb/milvus:v2.6.14
+    container_name: rag-milvus
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
+      COMMON_STORAGETYPE: local
+      DEPLOY_MODE: STANDALONE
+    configs:
+      - source: embed_etcd_yaml
+        target: /milvus/configs/embedEtcd.yaml
+      - source: milvus_user_yaml
+        target: /milvus/configs/user.yaml
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530"   # gRPC
+      - "9091:9091"     # 健康/管理 webui
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: rag-app
+    depends_on:
+      milvus:
+        condition: service_healthy
+    # API key / 模型名等通过 .env 注入；.env 不会进镜像（见 .dockerignore）
+    # required: false 让 .env 缺失时也能 compose config，但运行时会因缺少 API key 报错
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # 容器内通过 service 名访问 milvus，覆盖 .env 中可能的 localhost
+      MILVUS_URI: http://milvus:19530
+      # HF 缓存挂到 volume，模型下一次后所有重建都复用
+      HF_HOME: /hf_cache
+    volumes:
+      # 用户的原始文档：宿主机 ./data/raw/ 直接放进去
+      - ./data/raw:/app/data/raw
+      # 提取出来的图片 + caption 缓存：保留在宿主机方便查看与重用
+      - ./data/images:/app/data/images
+      # HuggingFace 模型缓存（首次启动会下载 ~5GB BGE-M3 + reranker）
+      - hf_cache:/hf_cache
+    ports:
+      - "8501:8501"     # Streamlit
+    restart: unless-stopped
+
+volumes:
+  milvus_data:
+  hf_cache:

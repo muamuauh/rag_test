@@ -1,0 +1,32 @@
+# 与硬件无关的核心依赖。torch 由 requirements-cpu.txt / requirements-cuda.txt
+# 两个变体文件按需引入。直接装这个文件不会带 torch。
+
+# --- Core RAG ---
+pymilvus>=2.4.0
+FlagEmbedding>=1.2.10
+litellm>=1.50.0
+
+# --- Document parsing ---
+pymupdf>=1.24.0
+python-docx>=1.1.0
+python-pptx>=1.0.0
+markdown-it-py>=3.0.0
+Pillow>=10.0.0
+
+# --- Chunking helper ---
+llama-index-core>=0.11.0
+
+# --- Frontend ---
+streamlit>=1.36.0
+
+# --- Config / utils ---
+pydantic-settings>=2.5.0
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# --- ML 上层（torch 由变体文件提供） ---
+transformers>=4.40.0,<5.0
+sentence-transformers>=3.0.0
+
+# --- Test ---
+pytest>=8.0.0

@@ -1,0 +1,12 @@
+# CPU 版 — 通用，不需要 NVIDIA GPU 也能跑。
+# 安装：
+#   pip install -r requirements-cpu.txt
+#
+# 速度参考：BGE-M3 在 CPU 上 ~50-100 chunk/s，对个人知识库够用
+
+-r requirements-base.txt
+
+# 用 PyTorch 官方 CPU 索引，确保跨平台都拿到 CPU 变体
+# （PyPI 上的 torch 在 Linux 默认是 CUDA 版，会拉超大依赖）
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2.0

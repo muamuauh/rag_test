@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Env
+.env
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (用户私有内容、模型缓存、向量库文件)
+/data/raw/*
+!/data/raw/.gitkeep
+/data/images/*
+!/data/images/.gitkeep
+/data/milvus/*
+!/data/milvus/.gitkeep
+
+# Local model weights cache
+.cache/
+hf_cache/
+
+# Milvus standalone runtime (由 standalone.bat 自动生成，不应入库)
+/embedEtcd.yaml
+/user.yaml
+/volumes/

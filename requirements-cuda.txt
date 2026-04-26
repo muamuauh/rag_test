@@ -1,0 +1,22 @@
+# CUDA 版 — 需要 NVIDIA GPU。
+# 默认走 cu128 wheel（覆盖 RTX 50 系 Blackwell；RTX 30/40 系也兼容）。
+#
+# 如果你的 GPU/驱动不支持 CUDA 12.8，请改成 cu126 / cu124 / cu121 / cu118：
+#   1. nvidia-smi 看 "CUDA Version: X.Y" 列
+#   2. 把下面索引 URL 中的 cu128 换成 cu<XY>（如 CUDA 12.1 → cu121）
+#
+# 安装：
+#   pip install -r requirements-cuda.txt
+#
+# 安装后验证 GPU 可用：
+#   python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+#
+# 速度参考（实测 RTX 5070 Laptop, fp16, batch=32, 中文 500 字 chunk）：~144 chunk/s；
+# 比 CPU 大约 1.5-3× 加速（瓶颈含 tokenization 与 sparse 输出，纯 inference 加速更大）。
+# 显存占用 fp16 下约 1.5 GB，bf16/fp32 ~3 GB
+
+-r requirements-base.txt
+
+# CUDA wheel 需要从 PyTorch 官方镜像拉
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch>=2.6.0

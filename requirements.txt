@@ -1,0 +1,6 @@
+# 这个文件保留是为了向后兼容旧文档/CI 脚本。默认 = CPU 变体。
+# 推荐显式选择：
+#   pip install -r requirements-cpu.txt    (CPU 通用)
+#   pip install -r requirements-cuda.txt   (NVIDIA GPU 加速)
+
+-r requirements-cpu.txt
